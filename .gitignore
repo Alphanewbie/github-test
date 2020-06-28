@@ -238,3 +238,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,django,windows,visualstudiocode
+mine/SECRET_KEY_FILE.py
