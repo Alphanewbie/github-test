@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block css %}
+<style>
+    canvas { background: #eee; }
+    @font-face { font-family: 'MaplestoryOTFBold'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFBold.woff') format('woff'); font-weight: normal; font-style: normal; }
+</style>
+{% endblock css %}
+
+{% block content %}
+    <div class="row">
+        <div class="col d-flex justify-content-center m-5">
+            <div class="card" style="width: 480px; height: 480px;">
+                <canvas id="myCanvas" width="480" height="480"></canvas>
+                <div class="card-body">
+                    <h5 class="card-title">Flag : <span id = "flag_count">0</span></h5>
+                    <h5 class="card-title">Time : <span id = "time_count">0</span></h5>
+                    {# <p class="card-text">Time : <span id = "time_count">0</span></p>#}
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var flag_count = document.getElementById("flag_count");
+        var time_count = document.getElementById("time_count");
+        var ctx = canvas.getContext("2d");
+        var gress_color = ['#2aa22a', "#1f7a1f"]
+        var sand_color = ['#cc8800', "#996600"]
+        var font_color = ['blue', 'green', 'red', 'purple','#800000','#ff3300']
+        var flag = new Image();
+        flag.src = "/media/media/flag.png";
+        var bomb = new Image();
+        bomb.src = "/media/media/bomb.png";
+        var timer = setInterval(()=>{
+            time_count.innerText = String(parseInt(time_count.innerText)+1);
+            console.log
+        }, 1000);
+        for(var i = 0; i<10;i++) {
+            for(var j= 0; j<10;j++) {
+                ctx.beginPath();
+                ctx.rect(48*i, 48*j, 48, 48);
+                ctx.fillStyle = gress_color[(i+j)%2];
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+        var continuegame = true;
+        var cleargame = false;
+        canvas.addEventListener("click", (e) => {
+            if(continuegame){
+            sendminegame(`${parseInt(e.layerY/48)}/${parseInt(e.layerX/48)}/search-mine`)
+            }
+        });
+
+        canvas.addEventListener('contextmenu', (e) => {
+            event.preventDefault();
+            console.log(flag_count.innerText)
+            if(continuegame){
+                sendminegame(`${parseInt(e.layerY/48)}/${parseInt(e.layerX/48)}/flag-evnet`)
+                
+            }
+            
+            
+        });
+        
+        function sendminegame(url) {
+            axios.get(url)
+            .then( (res) => {
+                flag_count.innerText = String(res.data.flag);
+                for(var i = 0; i<10;i++) {
+                    for(var j= 0; j<10;j++) {
+                        ctx.beginPath();
+                        ctx.rect(48*i, 48*j, 48, 48);
+                        if(res.data.board[j][i]=='A' || res.data.board[j][i]=='F') {
+                            ctx.fillStyle = gress_color[(i+j)%2];
+                        }
+                        else if(res.data.board[j][i]=='M') {
+                            ctx.fillStyle = "#ffcc66";
+                        }
+                        else if(res.data.board[j][i]=='X') {
+                            ctx.fillStyle = "#660000";
+                        }
+                    
+                        else {
+                            ctx.fillStyle = sand_color[(i+j)%2];
+                        }
+                        ctx.fill();
+                        ctx.closePath();
+                        ctx.beginPath();
+                        if(res.data.board[j][i]>0) {
+                            ctx.font = "25px"+ " " + "'MaplestoryOTFBold'";
+                            ctx.fillStyle = font_color[res.data.board[j][i]]; // 색상
+                            ctx.fillText(res.data.board[j][i], 48*(i)+16, 48*j + 33);
+                            ctx.fill();
+                        }
+                        else if (res.data.board[j][i]=='F') {
+                            ctx.drawImage(flag, 48*i, 48*j, 48, 48);
+                        }
+                        else if (res.data.board[j][i]=='X'||res.data.board[j][i]=='M') {
+                            ctx.drawImage(bomb, 48*i, 48*j, 48, 48);
+                        }
+                        ctx.closePath();
+                    }
+                }
+                if(res.data.result) {
+                    continuegame=false;
+                    clearInterval(timer);
+                    cleargame = res.data.clear
+                    if (cleargame){
+                        alert('clear');
+                    }
+                }
+            }
+            ).catch()
+        }
+
+    </script>
+{% endblock content %}
