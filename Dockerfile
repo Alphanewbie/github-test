@@ -12,8 +12,9 @@ ENV PYTHONUNBUFFERED 1
 
 # WORKDIR /usr/src/app
 # COPY requirements.txt ./
-RUN pip install django==2.1.15
-# RUN pip install -r requirements.txt
+# RUN pip install django==2.1.15
+RUN pip install -r requirements.txt
+RUN python manage.py migrate
 # COPY . /app/
 
 EXPOSE 8000
