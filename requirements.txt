@@ -28,5 +28,5 @@ scipy==1.5.0
 six==1.14.0
 soupsieve==2.0.1
 toml==0.10.1
-urllib3==1.25.9
+urllib3==1.26.5
 wrapt==1.11.2
